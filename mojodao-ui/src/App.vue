@@ -1,15 +1,16 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <h1> MojoDAO Ui V1</h1>
+  <SubBox/>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
+import SubBox from './components/SubBox.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    SubBox,
   }
 }
 </script>

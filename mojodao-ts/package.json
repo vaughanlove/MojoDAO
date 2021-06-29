@@ -1,0 +1,15 @@
+{
+  "name": "mojodao-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.20.0",
+    "typescript": "^4.3.4"
+  }
+}
