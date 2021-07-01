@@ -1,18 +1,18 @@
 <template>
-  <h1> MojoDAO Ui V1</h1>
-  <SubBox/>
+  <img alt="Vue logo" src="./assets/logo.png">
+  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
+import HelloWorld from './components/HelloWorld.vue';
 
-import SubBox from './components/SubBox.vue'
-
-export default {
+export default defineComponent({
   name: 'App',
   components: {
-    SubBox,
+    HelloWorld
   }
-}
+});
 </script>
 
 <style>
