@@ -1,0 +1,21 @@
+[package]
+name = "first-subscription"
+version = "0.0.1"
+description = "Subscription program written in rust on solana"
+authors = ["von <18vel@queensu.ca>"]
+edition = "2018"
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+borsh = "0.7.1"
+borsh-derive = "0.8.1"
+solana-program = "=1.6.6"
+
+[dev-dependencies]
+solana-program-test = "=1.6.6"
+
+[lib]
+name = "helloworld"
+crate-type = ["cdylib", "lib"]

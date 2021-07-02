@@ -1,0 +1,1 @@
+{"rustc":18250536222580762119,"features":"[\"default\", \"std\"]","target":15165659349197386700,"profile":16605510667465718815,"path":6301350164086118981,"deps":[[17698129864745516713,"borsh_derive",false,6115497000204090125]],"local":[{"CheckDepInfo":{"dep_info":"debug/.fingerprint/borsh-57a895d1573ebba1/dep-lib-borsh"}}],"rustflags":[],"metadata":6341613096556135379,"config":0}
