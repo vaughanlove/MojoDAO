@@ -4,9 +4,9 @@ import {Connection, PublicKey} from "@solana/web3.js";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {ProgramInfo} from "@/utils/subscription-list";
 
-export async function getDurationFromKey(web3: Connection, programID: PublicKey, wallet: Wallet ){
+export async function getDurationFromKey(web3: Connection, programID: PublicKey, walletKey: PublicKey){
     const GREETING_SEED = 'spotifysub'
-    const key = await PublicKey.createWithSeed(wallet.publicKey!, GREETING_SEED, programID).then(e => {return e})
+    const key = await PublicKey.createWithSeed(walletKey, GREETING_SEED, programID).then(e => {return e})
     const greetedAccount = await web3.getAccountInfo(key);
 
     const result =  borsh.deserialize(
