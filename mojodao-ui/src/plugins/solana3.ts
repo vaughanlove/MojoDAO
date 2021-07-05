@@ -3,6 +3,7 @@ import { Connection } from '@solana/web3.js'
 export const createConnection = (endpoint: string) => {
     const connection = new Connection(endpoint, 'confirmed')
     console.log(connection)
+
     return connection
 }
 

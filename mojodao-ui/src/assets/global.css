@@ -4,6 +4,14 @@ body {
     font-family: 'Yanone Kaffeesatz';
     background: #ece6d9;
 }
+h1 {
+    text-align: center;
+}
+.panel-div {
+    background: bisque;
+    padding: 12px;
+    margin-bottom: 15px;
+}
 
 
 
