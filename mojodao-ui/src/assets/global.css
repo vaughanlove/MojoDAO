@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Yanone+Kaffeesatz:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
+
 
 body {
-    font-family: 'Yanone Kaffeesatz';
-    background: #ece6d9;
+    font-family: 'Fugaz One';
+    background: linear-gradient(111deg, blanchedalmond, lavenderblush, blanchedalmond);
 }
 h1 {
     text-align: center;
 }
 .panel-div {
-    background: bisque;
     padding: 12px;
     margin-bottom: 15px;
 }
