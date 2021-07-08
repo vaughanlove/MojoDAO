@@ -1,99 +1,171 @@
 <template>
-  <button @click="connectWallet()">connect</button>
-  <div v-if="isConnected">
-    <div class="program-list" v-for="program in programs" :key="program.id">
-      <img :src="program.symbol.replace(' ', '-').toLowerCase()">
-      {{ program.name }}, cost: ${{program.cost}}, {{ program.subscribedUntil == undefined ? ' user is not subscribed' : 'user is subscribed until ' + program.subscribedUntil + ' hours'}}.
-      <button @click="saySub(program.id ,wallet, wallet.publicKey, web3)">subscribe</button>
+  <div>
+    <div class="program-list" v-for="program in progs" :key="program.id">
+      {{ program.name }}, cost: ${{program.cost}}, {{ program.userInfo }}.
+      <button @click="paySub(program.id)">sub</button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import {defineComponent, PropType, ref} from "vue";
-import {PROGRAMS} from "@/utils/subscription-list";
-import Wallet from "@project-serum/sol-wallet-adapter";
+import {createConnection} from "@/plugins/solana3";
 import {Connection, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
+import {ProgramInfo} from "@/utils/subscription-list";
+import Wallet from "@project-serum/sol-wallet-adapter";
 import {findAssociatedAccount, getDurationFromKey} from "@/utils/transactions";
-import SolanaWalletAdapter from "@project-serum/sol-wallet-adapter";
+import {SystemProgram} from "@solana/web3.js";
+import {GreetingAccount, GreetingSchema} from "@/plugins/solana3";
 import * as borsh from "borsh";
-import {createConnection, GreetingAccount, GreetingSchema} from "@/plugins/solana3";
+
 
 export default defineComponent({
   name: "ProgramList",
   components: {},
   data() {
     return {
-      web3: createConnection('https://api.devnet.solana.com'),
-      wallet: new SolanaWalletAdapter('https://www.sollet.io', "https://api.devnet.solana.com"),
-      programs: PROGRAMS,
+      GREETING_SEED: 'spotifysub',
+      web3: createConnection('https://api.devnet.solana.com')
     }
   },
-  setup(){
-    const ownerAccount = ref<PublicKey>()
-    const ownerAccountString = ref<string>()
-    const GREETING_SEED = ref<string>('spotifysub')
-    const isConnected = ref<boolean>(false)
-    return {ownerAccount, ownerAccountString, GREETING_SEED, isConnected}
+  setup() {
+    const walletAddress = ref<PublicKey>()
+    return{walletAddress}
   },
+  props: {
+    walletKey: {
+      required: true,
+      type: PublicKey
+    },
+    progs: {
+      required: true,
+      type: Array as PropType<ProgramInfo[]>
+    },
+    wall: {
+      required: true,
+      type: Wallet
+    },
+    programs: {
+      required: true,
+      type: Array as PropType<ProgramInfo[]>
+    },
+
+  },
+  created() {
+    this.logger()
+    this.walletAddress = this.walletKey;
+  },
+
   methods: {
-    async connectWallet(){
-      await this.wallet.connect()
-      this.isConnected = true
+    logger() {
+      console.log(this.walletKey.toString())
     },
-    async findAndVerifySpecificPDA(a: number){
-      const key = await PublicKey.createWithSeed(this.wallet.publicKey!, this.GREETING_SEED,this.programs[a].programKey).then(e => {return e})
-      //console.log(key.toString())
-      const greetedAccount = await this.web3!.getAccountInfo(key);
-      console.log(greetedAccount?.data)
-      if (greetedAccount?.data == undefined) {
-        console.log('account is not subscribed')
-      } else {
-        const duration = borsh.deserialize(
-            GreetingSchema,
-            GreetingAccount,
-            greetedAccount?.data,
-        )
-        console.log(duration)
-        this.programs[a].subscribedUntil = duration.counter
-      }
-    },
-    async saySub(i: number, walletT: Wallet, walletAddress: PublicKey, web3: Connection) {
+    async paySub(i: number) {
+      // log the program address
+      const programId = this.programs[i].programKey
       console.log('Subscribing to ' + this.programs[i].programKey.toString())
-      const temp = await findAssociatedAccount(this.programs[i].programKey, walletT).then(a => {return a})
-      console.log(temp.toString())
+
+      // find the associated account to, this is definitely a shit way to do this.
+      const GREETING_SEED = 'spotifysub';
+
+      const greetingSeed = await PublicKey.createWithSeed(
+          this.walletKey,
+          GREETING_SEED,
+          this.programs[i].programKey,
+      )
+      console.log(greetingSeed)
+
+      const greetedAccount = await this.web3.getAccountInfo(greetingSeed);
+
+      console.log(greetedAccount)
+
+      // MAKE GREETING_SIZE
+      const GREETING_SIZE = borsh.serialize(
+          GreetingSchema,
+          new GreetingAccount(),
+      ).length;
+
+      // lamports
+      console.log('the wallet key: ' + this.walletKey)
+
+      const lamports = await this.web3.getMinimumBalanceForRentExemption(GREETING_SIZE);
+
+      console.log('lamports:' + lamports)
+
+      if(greetedAccount == null) {
+        const gtransaction = new Transaction().add(
+            SystemProgram.createAccountWithSeed({
+              fromPubkey: this.walletKey,
+              basePubkey: this.walletKey,
+              seed: GREETING_SEED,
+              newAccountPubkey: greetingSeed,
+              lamports,
+              space: GREETING_SIZE,
+              programId,
+            }),
+        );
+        let { blockhash } = await this.web3.getRecentBlockhash();
+        gtransaction.recentBlockhash = blockhash;
+        gtransaction.feePayer = this.walletKey;
+
+        console.log('creating new sub account')
+        const gsigned = await this.wall.signTransaction(gtransaction)
+
+        const txid = await this.web3.sendRawTransaction(gsigned?.serialize())
+        console.log(txid);
+
+        await this.web3.confirmTransaction(txid);
+        await this.populateUserInfo()
+      }
+      // make the new transaction that we want to send to the programID
       const instruction = new TransactionInstruction({
-        keys: [{pubkey: temp!, isSigner: false, isWritable: true}],
+        keys: [{pubkey: greetingSeed, isSigner: false, isWritable: true}],
         programId: this.programs[i].programKey,
         data: Buffer.alloc(0), // All instructions are hellos
       });
+
+      // log that instruction
       console.log(instruction)
 
+      // make a new transaction and add the instruction
       let transaction = new Transaction().add(instruction)
-      console.log('here')
-      let { blockhash } = await web3.getRecentBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = walletAddress;
-      console.log(transaction)
 
-      // fails here
-      const signed = await walletT.signTransaction(transaction)
+      console.log('here')
+
+      // whatever this is, its needed
+      let { blockhash } = await this.web3.getRecentBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = this.walletKey;
+
+
+      console.log(transaction)
+      console.log('about to fail')
+
+      let signed = await this.wall.signTransaction(transaction);
       console.log(signed)
-      const txid = await web3.sendRawTransaction(signed.serialize())
+
+      const txid = await this.web3.sendRawTransaction(signed?.serialize())
       console.log(txid);
 
-      this.programs[i].subscribedUntil = await getDurationFromKey(web3, this.programs[i].programKey, walletAddress).then(e => {return e.counter})
-
-      await this.web3!.confirmTransaction(txid);
+      await this.web3.confirmTransaction(txid);
+      await this.populateUserInfo()
     },
-
+    async populateUserInfo() {
+      this.programs.forEach(e => {
+        getDurationFromKey(this.web3, e.programKey, this.walletKey).then(n => { e.userInfo = n})
+      })
+      console.log(this.programs)
+    },
   }
 })
 </script>
 
 <style scoped>
 .program-list {
-  background: aquamarine;
+  width: 40%;
+  margin: auto;
+  text-align: center;
+  background: lightcoral;
   padding: 12px;
   margin-bottom: 15px;
 }

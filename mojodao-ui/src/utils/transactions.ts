@@ -8,14 +8,17 @@ export async function getDurationFromKey(web3: Connection, programID: PublicKey,
     const GREETING_SEED = 'spotifysub'
     const key = await PublicKey.createWithSeed(walletKey, GREETING_SEED, programID).then(e => {return e})
     const greetedAccount = await web3.getAccountInfo(key);
-
-    const result =  borsh.deserialize(
-        GreetingSchema,
-        GreetingAccount,
-        greetedAccount!.data,
-
-    )
-    return result
+    if (greetedAccount != null){
+        const result =  borsh.deserialize(
+            GreetingSchema,
+            GreetingAccount,
+            greetedAccount!.data,
+        )
+        return 'user subbed until ' + result.counter + ' hours'
+    } else {
+        const result  = 'user not subscribed'
+        return result
+    }
 }
 
 export async function findAssociatedAccount(programkey: PublicKey, wallet: Wallet){

@@ -14,7 +14,7 @@ export interface ProgramInfo {
 
     active: boolean
 
-    subscribedUntil?: number
+    userInfo?: string
 
     referrer?: string
 
@@ -26,7 +26,7 @@ export interface ProgramInfo {
 export const PROGRAMS: ProgramInfo[] = [
     {
         symbol: '../assets/Spotify-logo.png',
-        name: 'Spotify - One month',
+        name: 'PAWGs - One month',
         id: 0,
         programKey: new PublicKey('EDTtxSugqhzghWB8aJtHoqktTfnBuTtbHFWYDGs6A8Rs'),
         cost: 12,
@@ -37,31 +37,9 @@ export const PROGRAMS: ProgramInfo[] = [
     },
     {
         symbol: '../assets/Spotify-logo.png',
-        name: 'Spotify - Three month',
+        name: 'PAWGs - Three month',
         id: 1,
         programKey: new PublicKey('6QZ5ehKAS4inTNJLxnLSU3AKUZ4MokMtTUYKjZmfvP1D'),
-        cost: 30,
-        duration: 90,
-        active: false,
-
-        details: 'the music subscription service spotify',
-    },
-    {
-        symbol: '../assets/Spotify-logo.png',
-        name: 'Spotify - Six month',
-        id: 2,
-        programKey: new PublicKey('J2sw9oeXQQVph9Di1wgUqu8PTdMn51y9FuYMgDEMMqNK'),
-        cost: 30,
-        duration: 90,
-        active: false,
-
-        details: 'the music subscription service spotify',
-    },
-    {
-        symbol: '../assets/Spotify-logo.png',
-        name: 'Spotify - Twelve month',
-        id: 3,
-        programKey: new PublicKey('6mREPwVPdQfUnmXwvfHQduPCmJVoDbXJe4s4eArTT2sW'),
         cost: 30,
         duration: 90,
         active: false,

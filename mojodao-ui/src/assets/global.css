@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
 
 body {
     font-family: 'Fugaz One';
@@ -8,10 +8,74 @@ body {
 h1 {
     text-align: center;
 }
-.panel-div {
-    padding: 12px;
-    margin-bottom: 15px;
+::selection {
+    color: red;
 }
+.panel-header {
+    font-size: 26px;
+    color: darkred;
+    border-color: black;
+    border-radius: 20px;
+    width: 50%;
+    position: relative;
+    right: 2em;
+}
+.box {
+    border-radius: 20px;
+    width: 50%;
+    margin: 100px auto auto;
+}
+.panel-text {
+    font-family: "Lato", serif;
+    font-weight: bold;
+    font-size: 22px;
+    margin: 30px;
+}
+li {
+    font-family: "Lato", serif;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 20px;
+    margin-left: 50px;
+}
+.connect {
+    font-family: 'Fugaz One';
+    padding: 15px 25px;
+    font-size: 24px;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    float: right;
+    color: #fff;
+    background-color: darkred;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 9px #999;
+}
+.connect:hover {
+    background-color: red;
+}
+.connect:active {
+    background-color: darkred;
+    box-shadow: 0 5px #666;
+    transform: translateY(4px);
+}
+.connected {
+    font-family: 'Fugaz One';
+    padding: 15px 25px;
+    font-size: 24px;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    float: right;
+    color: #fff;
+    transform: translateY(4px);
+    background-color: darkred;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px #666;
+}
+
 
 
 

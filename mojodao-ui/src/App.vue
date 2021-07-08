@@ -9,7 +9,7 @@
                     class="divider" tag="button" to="/about">About</router-link>
       <router-link :class="{ 'highlighted-divider': activeClass === 'client' }"
                    @click="activeClass = 'client'"
-                   class="divider" tag="button" to="/client">Client</router-link>
+                   class="divider" tag="button" to="/client">Programs</router-link>
       <router-link :class="{ 'highlighted-divider': activeClass === 'user' }"
                    @click="activeClass = 'user'"
                    class="divider" tag="button" to="/user">User</router-link>
@@ -17,12 +17,23 @@
                    @click="activeClass = 'demo'"
                    class="divider" tag="button" to="/demo">Demo</router-link>
     </div>
-    <router-view />
+    <button v-if="!isConnected" class="connect" @click="connecter()">connect</button>
+    <button v-if="isConnected" class="connected" disabled @click="connecter()">connected</button>
+
+    <router-view v-bind:wall="wall" v-bind:walletKey="walletKey" v-bind:isConnected="isConnected" v-bind:programs="programs"/>
+
+
   </div>
 </template>
 
 <script lang="ts">
-import {defineComponent} from "vue";
+import {defineComponent, ref} from "vue";
+import SolanaWalletAdapter from "@project-serum/sol-wallet-adapter";
+import {PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
+import {ProgramInfo, PROGRAMS} from "@/utils/subscription-list";
+import {createConnection} from "@/plugins/solana3";
+import Wallet from "@project-serum/sol-wallet-adapter";
+import {getDurationFromKey} from "@/utils/transactions";
 
 
 export default defineComponent({
@@ -31,8 +42,86 @@ export default defineComponent({
   data() {
     return {
       isActive: false,
-      activeClass: ''
+      activeClass: '',
+      web3: createConnection('https://api.devnet.solana.com')
     }
+  },
+  setup() {
+    const programs = ref<ProgramInfo[]>(PROGRAMS)
+    const wall =  new Wallet('https://www.sollet.io', "https://api.devnet.solana.com")
+    const walletKey = ref<PublicKey>(new PublicKey('11111111111111111111111111111111'))
+    const isConnected = ref<boolean>(false)
+    return {programs, wall, walletKey, isConnected}
+  },
+  methods: {
+    async connecter(){
+      await this.wall.connect()
+      if (this.wall.connected) {
+        console.log(this.wall.publicKey?.toBase58())
+        this.walletKey = this.wall.publicKey!
+        this.isConnected = true
+        await this.populateUserInfo()
+      }
+      else {
+        console.log('wallet connection unsuccessful')
+      }
+    },
+    async subber() {
+      // log the program address
+      console.log('Subscribing to ' + this.programs[0].programKey.toString())
+
+      // find the associated account to, this is definitely a shit way to do this.
+      const GREETING_SEED = 'spotifysub';
+
+      const greetingSeed = await PublicKey.createWithSeed(
+          this.wall.publicKey!,
+          GREETING_SEED,
+          this.programs[0].programKey,
+      )
+      console.log(greetingSeed)
+
+      // make the new transaction that we want to send to the programID
+      const instruction = new TransactionInstruction({
+        keys: [{pubkey: greetingSeed, isSigner: false, isWritable: true}],
+        programId: this.programs[0].programKey,
+        data: Buffer.alloc(0), // All instructions are hellos
+      });
+
+      // log that instruction
+      console.log(instruction)
+
+      // make a new transaction and add the instruction
+      let transaction = new Transaction().add(instruction)
+
+      console.log('here')
+
+      // whatever this is, its needed
+      let { blockhash } = await this.web3.getRecentBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = this.wall.publicKey!;
+
+
+      console.log(transaction)
+      console.log('about to fail')
+
+      let signed = await this.wall.signTransaction(transaction);
+      console.log(signed)
+      // fails here
+      //const signed = await this.wall?.signTransaction(transaction)
+      //console.log(signed)
+      const txid = await this.web3.sendRawTransaction(signed?.serialize())
+      console.log(txid);
+
+      await this.web3.confirmTransaction(txid);
+
+      await this.populateUserInfo()
+    },
+    async populateUserInfo() {
+      this.programs.forEach(e => {
+        getDurationFromKey(this.web3, e.programKey, this.walletKey).then(n => { e.userInfo = n})
+      })
+      console.log(this.programs)
+    },
   }
 
 })
@@ -64,7 +153,7 @@ a:hover {
   font-family: 'Satisfy', cursive;
   font-size: 64px;
   text-shadow: 1px 1px black;
-  transform: rotate(-10deg);
+  transform: rotate(0deg);
 }
 .divider {
   position: relative;
