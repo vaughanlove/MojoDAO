@@ -1,9 +1,8 @@
 import { createWebHistory, createRouter } from "vue-router";
 import Client from '@/views/Client.vue'
 import About from '@/views/About.vue'
-import User from '@/views/User.vue'
+import Token from '@/views/Token.vue'
 import Demo from '@/views/Demo.vue'
-import App from "@/App.vue";
 
 
 export const routes = [
@@ -13,9 +12,9 @@ export const routes = [
         component: Client,
     },
     {
-        path: "/user",
-        name: "User",
-        component: User,
+        path: "/token",
+        name: "Token",
+        component: Token,
     },
     {
         path: "/about",

@@ -1,12 +1,11 @@
 <template>
- <h1>User page</h1>
+  <h1> $MOJO ICO </h1>
 </template>
 
-<script lang="ts">
+<script>
 import {defineComponent} from "vue";
-
 export default defineComponent({
-  name: "User"
+  name: "Token"
 })
 </script>
 

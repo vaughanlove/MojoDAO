@@ -2,7 +2,10 @@
   <div>
     <div class="program-list" v-for="program in progs" :key="program.id">
       {{ program.name }}, cost: ${{program.cost}}, {{ program.userInfo }}.
-      <button @click="paySub(program.id)">sub</button>
+      <button @click="sub(program.id)">sub</button>
+    </div>
+    <div class="box">
+      <button > try new sub </button>
     </div>
   </div>
 </template>
@@ -10,13 +13,16 @@
 <script lang="ts">
 import {defineComponent, PropType, ref} from "vue";
 import {createConnection} from "@/plugins/solana3";
-import {Connection, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
+import {Connection, Keypair, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {ProgramInfo} from "@/utils/subscription-list";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {findAssociatedAccount, getDurationFromKey} from "@/utils/transactions";
 import {SystemProgram} from "@solana/web3.js";
 import {GreetingAccount, GreetingSchema} from "@/plugins/solana3";
 import * as borsh from "borsh";
+import {Account} from "@solana/web3.js";
+import { createToast } from 'mosha-vue-toastify';
+import 'mosha-vue-toastify/dist/style.css'
 
 
 export default defineComponent({
@@ -59,6 +65,13 @@ export default defineComponent({
   methods: {
     logger() {
       console.log(this.walletKey.toString())
+    },
+    async sub(i: number) {
+      try {
+        await this.paySub(i)
+      } catch (e) {
+        createToast('tx failed.', {type: 'danger', position: 'bottom-left'})
+      }
     },
     async paySub(i: number) {
       // log the program address
@@ -148,6 +161,8 @@ export default defineComponent({
       console.log(txid);
 
       await this.web3.confirmTransaction(txid);
+      createToast("Success. TXID: " + txid, {type: 'success', position: 'bottom-left'})
+
       await this.populateUserInfo()
     },
     async populateUserInfo() {
